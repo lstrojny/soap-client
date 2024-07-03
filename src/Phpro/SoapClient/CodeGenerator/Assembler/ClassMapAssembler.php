@@ -50,12 +50,7 @@ class ClassMapAssembler implements AssemblerInterface
             $linefeed = $file::LINE_FEED;
             $classMap = $this->assembleClassMap($typeMap, $linefeed, $file->getIndentation());
             $code = $this->assembleClassMapCollection($classMap, $linefeed).$linefeed;
-            $class->addMethodFromGenerator(
-                (new MethodGenerator('getCollection'))
-                    ->setStatic(true)
-                    ->setBody('return '.$code)
-                    ->setReturnType(ClassMapCollection::class)
-            );
+            $class->addMethodFromGenerator($this->generateGetCollectionMethod($code));
         } catch (\Exception $e) {
             throw AssemblerException::fromException($e);
         }
@@ -103,5 +98,16 @@ class ClassMapAssembler implements AssemblerInterface
         ];
 
         return sprintf(implode($linefeed, $code), $classMap);
+    }
+
+    private function generateGetCollectionMethod(string $code): MethodGenerator
+    {
+        $method = new MethodGenerator('getCollection');
+
+        $method->setStatic(true);
+        $method->setBody('return ' . $code);
+        $method->setReturnType(ClassMapCollection::class);
+
+        return $method;
     }
 }

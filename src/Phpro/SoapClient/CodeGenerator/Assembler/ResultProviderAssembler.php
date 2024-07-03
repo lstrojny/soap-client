@@ -86,23 +86,29 @@ class ResultProviderAssembler implements AssemblerInterface
 
         $methodName = 'getResult';
         $class->removeMethod($methodName);
-        $class->addMethodFromGenerator(
-            (new MethodGenerator($methodName))
-                ->setParameters([])
-                ->setVisibility(MethodGenerator::VISIBILITY_PUBLIC)
-                ->setReturnType(ResultInterface::class)
-                ->setBody($this->generateGetResultBody($property))
-                ->setDocBlock(
-                    (new DocBlockGenerator())
-                        ->setWordWrap(false)
-                        ->setTags([
-                            [
-                                'name' => 'return',
-                                'description' => $this->generateGetResultReturnTag($property)
-                            ]
-                        ])
-                )
+        $class->addMethodFromGenerator($this->generateGetResultMethod($methodName, $property));
+    }
+
+    private function generateGetResultMethod(string $methodName, Property $property): MethodGenerator
+    {
+        $method = new MethodGenerator($methodName);
+
+        $method->setParameters([]);
+        $method->setVisibility(MethodGenerator::VISIBILITY_PUBLIC);
+        $method->setReturnType(ResultInterface::class);
+        $method->setBody($this->generateGetResultBody($property));
+        $method->setDocBlock(
+            (new DocBlockGenerator())
+                ->setWordWrap(false)
+                ->setTags([
+                    [
+                        'name' => 'return',
+                        'description' => $this->generateGetResultReturnTag($property)
+                    ]
+                ])
         );
+
+        return $method;
     }
 
     /**

@@ -66,34 +66,7 @@ class IteratorAssembler implements AssemblerInterface
 
         $methodName = 'getIterator';
         $class->removeMethod($methodName);
-        $class->addMethodFromGenerator(
-            (new MethodGenerator($methodName))
-                ->setParameters([])
-                ->setVisibility(MethodGenerator::VISIBILITY_PUBLIC)
-                ->setBody(sprintf(
-                    'return new \\ArrayIterator($this->%1$s);',
-                    $firstProperty->getName()
-                ))
-                ->setReturnType('ArrayIterator')
-                ->setDocBlock(
-                    (new DocBlockGenerator())
-                        ->setWordWrap(false)
-                        ->setTags([
-                            [
-                                'name' => 'return',
-                                'description' => '\\ArrayIterator|'. $firstProperty->getType() .'[]'
-                            ],
-                            [
-                                'name' => 'phpstan-return',
-                                'description' => '\\ArrayIterator'.$arrayInfo,
-                            ],
-                            [
-                                'name' => 'psalm-return',
-                                'description' => '\\ArrayIterator'.$arrayInfo,
-                            ]
-                        ])
-                )
-        );
+        $class->addMethodFromGenerator($this->generateGetIteratorMethod($methodName, $firstProperty, $arrayInfo));
 
         $class->setDocBlock(
             (new DocBlockGenerator())
@@ -109,5 +82,41 @@ class IteratorAssembler implements AssemblerInterface
                     ]
                 ])
         );
+    }
+
+    private function generateGetIteratorMethod(
+        string $methodName,
+        Property $firstProperty,
+        string $arrayInfo
+    ): MethodGenerator {
+        $method = new MethodGenerator($methodName);
+
+        $method->setParameters([]);
+        $method->setVisibility(MethodGenerator::VISIBILITY_PUBLIC);
+        $method->setBody(sprintf(
+            'return new \\ArrayIterator($this->%1$s);',
+            $firstProperty->getName()
+        ));
+        $method->setReturnType('ArrayIterator');
+        $method->setDocBlock(
+            (new DocBlockGenerator())
+                ->setWordWrap(false)
+                ->setTags([
+                    [
+                        'name' => 'return',
+                        'description' => '\\ArrayIterator|' . $firstProperty->getType() . '[]'
+                    ],
+                    [
+                        'name' => 'phpstan-return',
+                        'description' => '\\ArrayIterator' . $arrayInfo,
+                    ],
+                    [
+                        'name' => 'psalm-return',
+                        'description' => '\\ArrayIterator' . $arrayInfo,
+                    ]
+                ])
+        );
+
+        return $method;
     }
 }

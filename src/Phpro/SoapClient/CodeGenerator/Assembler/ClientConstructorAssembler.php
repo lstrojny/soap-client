@@ -33,30 +33,42 @@ class ClientConstructorAssembler implements AssemblerInterface
         $class = $context->getClass();
         try {
             $caller = $this->generateClassNameAndAddImport(Caller::class, $class);
-            $class->addPropertyFromGenerator(
-                (new PropertyGenerator('caller'))
-                    ->setVisibility(PropertyGenerator::VISIBILITY_PRIVATE)
-                    ->omitDefaultValue(true)
-                    ->setDocBlock((new DocBlockGenerator())
-                        ->setWordWrap(false)
-                        ->setTags([
-                            [
-                                'name'        => 'var',
-                                'description' => $caller,
-                            ],
-                        ])),
-            );
-            $class->addMethodFromGenerator(
-                (new MethodGenerator('__construct'))
-                    ->setParameter(new ParameterGenerator('caller', Caller::class))
-                    ->setVisibility(MethodGenerator::VISIBILITY_PUBLIC)
-                    ->setBody('$this->caller = $caller;')
-            );
+            $class->addPropertyFromGenerator($this->generateCallerProperty($caller));
+            $class->addMethodFromGenerator($this->generateConstructor());
         } catch (\Exception $e) {
             throw AssemblerException::fromException($e);
         }
 
         return true;
+    }
+
+    private function generateConstructor(): MethodGenerator
+    {
+        $method = new MethodGenerator('__construct');
+
+        $method->setParameter(new ParameterGenerator('caller', Caller::class));
+        $method->setVisibility(MethodGenerator::VISIBILITY_PUBLIC);
+        $method->setBody('$this->caller = $caller;');
+
+        return $method;
+    }
+
+    private function generateCallerProperty(string $caller): PropertyGenerator
+    {
+        $property = new PropertyGenerator('caller');
+
+        $property->setVisibility(PropertyGenerator::VISIBILITY_PRIVATE);
+        $property->omitDefaultValue(true);
+        $property->setDocBlock((new DocBlockGenerator())
+            ->setWordWrap(false)
+            ->setTags([
+                [
+                    'name' => 'var',
+                    'description' => $caller,
+                ],
+            ]));
+
+        return $property;
     }
 
     /**

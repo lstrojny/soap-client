@@ -56,11 +56,12 @@ class PropertyAssembler implements AssemblerInterface
                 $class->removeProperty($property->getName());
             }
 
-            $propertyGenerator = (new PropertyGenerator($property->getName()))
-                ->setVisibility($this->options->visibility())
-                ->omitDefaultValue(
-                    !$this->options->useOptionalValue() && !(new IsConsideredNullableType())($property->getMeta())
-                );
+            $propertyGenerator = new PropertyGenerator($property->getName());
+
+            $propertyGenerator->setVisibility($this->options->visibility());
+            $propertyGenerator->omitDefaultValue(
+                !$this->options->useOptionalValue() && !(new IsConsideredNullableType())($property->getMeta())
+            );
 
             if ($this->options->useDocBlocks()) {
                 $propertyGenerator->setDocBlock(
@@ -76,7 +77,7 @@ class PropertyAssembler implements AssemblerInterface
                 );
             }
 
-            if ($this->options->useTypeHints()) {
+            if ($this->options->useTypeHints() && method_exists($propertyGenerator, 'setType')) {
                 $propertyGenerator->setType(TypeGenerator::fromTypeString($property->getPhpType()));
             }
 

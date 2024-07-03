@@ -65,23 +65,29 @@ BODY;
         $class->addUse(EventDispatchingCaller::class);
         $class->addUse(EngineCaller::class);
         $class->addUse(EncoderRegistry::class);
-        $class->addMethodFromGenerator(
-            (new MethodGenerator('factory'))
-                ->setStatic(true)
-                ->setBody(sprintf(self::BODY, $context->getClientName(), $context->getClassmapName()))
-                ->setReturnType($context->getClientFqcn())
-                ->setParameter(new ParameterGenerator('wsdl', 'string'))
-                ->setDocBlock(
-                    (new DocBlockGenerator())
-                        ->setShortDescription(
-                            'This factory can be used as a starting point '.
-                            'to create your own specialized factory. Feel free to modify.'
-                        )
-                )
-        );
+        $class->addMethodFromGenerator($this->generateFactoryMethod($context));
 
         $file->setClass($class);
 
         return $file->generate();
+    }
+
+    private function generateFactoryMethod(ClientFactoryContext $context): MethodGenerator
+    {
+        $method = new MethodGenerator('factory');
+
+        $method->setStatic(true);
+        $method->setBody(sprintf(self::BODY, $context->getClientName(), $context->getClassmapName()));
+        $method->setReturnType($context->getClientFqcn());
+        $method->setParameter(new ParameterGenerator('wsdl', 'string'));
+        $method->setDocBlock(
+            (new DocBlockGenerator())
+                ->setShortDescription(
+                    'This factory can be used as a starting point ' .
+                    'to create your own specialized factory. Feel free to modify.'
+                )
+        );
+
+        return $method;
     }
 }

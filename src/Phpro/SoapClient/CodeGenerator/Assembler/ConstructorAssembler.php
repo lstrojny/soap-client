@@ -68,8 +68,9 @@ class ConstructorAssembler implements AssemblerInterface
     private function assembleConstructor(Type $type): MethodGenerator
     {
         $body = [];
-        $constructor = (new MethodGenerator('__construct'))
-            ->setVisibility(MethodGenerator::VISIBILITY_PUBLIC);
+        $constructor = (new MethodGenerator('__construct'));
+
+        $constructor->setVisibility(MethodGenerator::VISIBILITY_PUBLIC);
 
         $docblock = (new DocBlockGenerator())
             ->setWordWrap(false)

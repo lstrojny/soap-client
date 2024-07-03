@@ -36,6 +36,39 @@ class PropertyAssemblerTest extends TestCase
      */
     function it_assembles_property_without_default_value()
     {
+        $assembler = new PropertyAssembler(
+            PropertyAssemblerOptions::create()->withTypeHints(false)
+        );
+        $context = $this->createContext();
+        $assembler->assemble($context);
+        $code = $context->getClass()->generate();
+        $expected = <<<CODE
+namespace MyNamespace;
+
+class MyType
+{
+    /**
+     * Type specific docs
+     *
+     * @var string
+     */
+    private \$prop1;
+}
+
+CODE;
+
+        $this->assertEquals($expected, $code);
+    }
+
+    /**
+     * @test
+     */
+    function it_assembles_property_with_type()
+    {
+        if (!method_exists(PropertyGenerator::class, 'setType')) {
+            $this->markTestSkipped('This test requires laminas-code >=4.6.0');
+        }
+
         $assembler = new PropertyAssembler();
         $context = $this->createContext();
         $assembler->assemble($context);
@@ -64,7 +97,9 @@ CODE;
     function it_assembles_property_with_default_value()
     {
         $assembler = new PropertyAssembler(
-            PropertyAssemblerOptions::create()->withOptionalValue()
+            PropertyAssemblerOptions::create()
+                ->withTypeHints(false)
+                ->withOptionalValue()
         );
         $context = $this->createContext();
         $assembler->assemble($context);
@@ -79,7 +114,7 @@ class MyType
      *
      * @var null | string
      */
-    private ?string \$prop1 = null;
+    private \$prop1 = null;
 }
 
 CODE;
@@ -94,7 +129,9 @@ CODE;
     function it_assembles_with_visibility_without_default_value()
     {
         $assembler = new PropertyAssembler(
-            PropertyAssemblerOptions::create()->withVisibility(PropertyGenerator::VISIBILITY_PUBLIC)
+            PropertyAssemblerOptions::create()
+                ->withVisibility(PropertyGenerator::VISIBILITY_PUBLIC)
+                ->withTypeHints(false)
         );
         $context = $this->createContext();
         $assembler->assemble($context);
@@ -109,7 +146,7 @@ class MyType
      *
      * @var string
      */
-    public string \$prop1;
+    public \$prop1;
 }
 
 CODE;
@@ -123,7 +160,9 @@ CODE;
     function it_assembles_without_doc_blocks()
     {
         $assembler = new PropertyAssembler(
-            PropertyAssemblerOptions::create()->withDocBlocks(false)
+            PropertyAssemblerOptions::create()
+                ->withDocBlocks(false)
+                ->withTypeHints(false)
         );
         $context = $this->createContext();
         $assembler->assemble($context);
@@ -133,7 +172,7 @@ namespace MyNamespace;
 
 class MyType
 {
-    private string \$prop1;
+    private \$prop1;
 }
 
 CODE;
@@ -175,7 +214,10 @@ CODE;
      */
     function it_assembles_a_doc_block_that_does_not_wrap()
     {
-        $assembler = new PropertyAssembler();
+        $assembler = new PropertyAssembler(
+            PropertyAssemblerOptions::create()
+                ->withTypeHints(false)
+        );
         $context = $this->createContextWithLongType();
 
         $assembler->assemble($context);
@@ -189,7 +231,7 @@ class MyType
     /**
      * @var \\This\\Is\\My\\Very\\Very\\Long\\Namespace\\And\\Class\\Name\\That\\Should\\Not\\Never\\Ever\\Wrap
      */
-    private \\This\\Is\\My\\Very\\Very\\Long\\Namespace\\And\\Class\\Name\\That\\Should\\Not\\Never\\Ever\\Wrap \$prop1;
+    private \$prop1;
 }
 
 CODE;
@@ -201,7 +243,9 @@ CODE;
      */
     function it_assembles_properties_with_advanced_types()
     {
-        $assembler = new PropertyAssembler();
+        $assembler = new PropertyAssembler(
+            PropertyAssemblerOptions::create()->withTypeHints(false)
+        );
         $class = new ClassGenerator('MyType', 'MyNamespace');
         $type = new Type($namespace = 'MyNamespace', 'MyType', [
             $property = Property::fromMetaData(
@@ -224,7 +268,7 @@ class MyType
     /**
      * @var array<int<0,max>, string>
      */
-    private array \$prop1;
+    private \$prop1;
 }
 
 CODE;
@@ -243,7 +287,9 @@ CODE;
         $assembler1->assemble($context);
 
         $assembler2 = new PropertyAssembler(
-            PropertyAssemblerOptions::create()->withVisibility(PropertyGenerator::VISIBILITY_PUBLIC)
+            PropertyAssemblerOptions::create()
+                ->withVisibility(PropertyGenerator::VISIBILITY_PUBLIC)
+                ->withTypeHints(false)
         );
         $assembler2->assemble($context);
 
@@ -258,7 +304,7 @@ class MyType
      *
      * @var string
      */
-    public string \$prop1;
+    public \$prop1;
 }
 
 CODE;
@@ -271,7 +317,7 @@ CODE;
     function it_assembles_property_with_null()
     {
         $assembler = new PropertyAssembler(
-            PropertyAssemblerOptions::create()
+            PropertyAssemblerOptions::create()->withTypeHints(false)
         );
         $context = $this->createContextWithNullableType();
         $assembler->assemble($context);
@@ -286,7 +332,7 @@ class MyType
      *
      * @var null | string
      */
-    private ?string \$prop1 = null;
+    private \$prop1 = null;
 }
 
 CODE;

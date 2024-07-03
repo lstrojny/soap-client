@@ -54,18 +54,31 @@ class ClientMethodAssembler implements AssemblerInterface
             $methodBody = $this->generateMethodBody($class, $param, $method, $context);
 
             $class->addMethodFromGenerator(
-                (new MethodGenerator($phpMethodName))
-                    ->setParameters($param === null ? [] : [$param])
-                    ->setVisibility(MethodGenerator::VISIBILITY_PUBLIC)
-                    ->setBody($methodBody)
-                    ->setReturnType($this->decideOnReturnType($context, true))
-                    ->setDocBlock($docblock)
+                $this->generateMethod($phpMethodName, $param, $methodBody, $context, $docblock)
             );
         } catch (\Exception $e) {
             throw AssemblerException::fromException($e);
         }
 
         return true;
+    }
+
+    private function generateMethod(
+        string $phpMethodName,
+        ?ParameterGenerator $param,
+        string $methodBody,
+        ClientMethodContext $context,
+        DocBlockGenerator $docblock
+    ): MethodGenerator {
+        $method = new MethodGenerator($phpMethodName);
+
+        $method->setParameters($param === null ? [] : [$param]);
+        $method->setVisibility(MethodGenerator::VISIBILITY_PUBLIC);
+        $method->setBody($methodBody);
+        $method->setReturnType($this->decideOnReturnType($context, true));
+        $method->setDocBlock($docblock);
+
+        return $method;
     }
 
     private function generateMethodBody(
